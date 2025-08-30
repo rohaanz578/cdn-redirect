@@ -1,7 +1,8 @@
 {
-  "name": "redirectiontool",
-  "type": "module",
+  "name": "cdn-redirect",
   "version": "0.0.0",
+  "type": "module",
+  "private": true,
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250828.1",
     "@swc/cli": "^0.7.8",
@@ -12,12 +13,11 @@
     "vitest": "^2.1.1",
     "wrangler": "^4.33.1"
   },
-  "private": true,
   "scripts": {
     "config": "node liquidify-wrangler.mjs",
-    "start": "npm run config && wrangler dev",
-    "deploy": "npm run config && wrangler publish",
-    "test-build": "npm run config && spack --config ./spack.config.cjs",
-    "test": "npm run test-build && vitest --run"
+    "start": "npm run config && wrangler dev",      // Run config and start Wrangler dev server
+    "deploy": "npm run config && wrangler publish", // Prepare config and deploy to Cloudflare Workers
+    "test-build": "npm run config && spack --config ./spack.config.cjs", // Config + build for testing
+    "test": "npm run test-build && vitest --run"    // Build and run tests with Vitest
   }
 }
