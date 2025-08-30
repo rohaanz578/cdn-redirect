@@ -15,9 +15,9 @@
   },
   "scripts": {
     "config": "node liquidify-wrangler.mjs",
-    "start": "npm run config && wrangler dev",      // Run config and start Wrangler dev server
-    "deploy": "npm run config && wrangler publish", // Prepare config and deploy to Cloudflare Workers
-    "test-build": "npm run config && spack --config ./spack.config.cjs", // Config + build for testing
-    "test": "npm run test-build && vitest --run"    // Build and run tests with Vitest
+    "start": "npm run config && wrangler dev",
+    "deploy": "npm run config && wrangler publish",
+    "test-build": "npm run config && spack --config ./spack.config.cjs",
+    "test": "npm run test-build && vitest --run"
   }
 }
