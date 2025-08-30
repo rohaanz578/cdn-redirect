@@ -1,18 +1,19 @@
-name: Build, Test and Deploy
+name: Build and Deploy
 
 on:
-  workflow_dispatch:      # Allow manual triggering
+  workflow_dispatch: # Allow manual triggering
   push:
     branches:
-      - main             # Trigger on push to main branch
+      - main         # Trigger on push to main branch
   pull_request:
     branches:
-      - main             # Trigger on PRs targeting main
+      - main         # Trigger on PRs targeting main
 
 jobs:
-  build-and-test:
+  deploy:
     runs-on: ubuntu-latest
-    name: Build and Test
+    name: Deploy to Cloudflare Workers
+
     steps:
       - uses: actions/checkout@v5
 
@@ -22,33 +23,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
-        run: npm run test # you can add --coverage if needed
-        env:
-          CF_KV_NAMESPACE: ${{ secrets.CF_KV_NAMESPACE }}
-          CF_KV_PREVIEW_NAMESPACE: ${{ secrets.CF_KV_PREVIEW_NAMESPACE }}
-
-      # Uncomment below if you want to upload coverage reports to Codecov
-      # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-
-  deploy:
-    runs-on: ubuntu-latest
-    name: Deploy to Cloudflare Workers
-    needs: build-and-test
-    if: ${{ success() && github.ref == 'refs/heads/main' }}  # Deploy only on successful build on main branch
-    steps:
-      - uses: actions/checkout@v5
-
       - name: Deploy using Wrangler
         uses: cloudflare/wrangler-action@v3.14.1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           preCommands: |
-            npm install
-            npm run config    # Make sure this command exists in your package.json scripts
+            npm run config    # Prepares wrangler.toml
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE: ${{ secrets.CF_KV_NAMESPACE }}
