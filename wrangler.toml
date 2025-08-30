@@ -3,7 +3,7 @@ main = "src/index.ts"
 compatibility_date = "2023-04-11"
 
 kv_namespaces = [
-  { binding = "redirectiontool", id = "{{ CF_KV_NAMESPACE }}", preview_id = "{{ CF_KV_PREVIEW_NAMESPACE }}" }
+  { binding = "redirects-kv", id = "{{ CF_KV_NAMESPACE }}", preview_id = "{{ CF_KV_PREVIEW_NAMESPACE }}" }
 ]
 
 [vars]
