@@ -2,12 +2,12 @@
 import { handle } from "./handler";
 
 export interface Env {
-  redirectiontool: KVNamespace;
+  "redirects-kv": KVNamespace;   // Use your KV binding name here
   CREATE_API_KEY: string;
 }
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    return handle(request, env.redirectiontool, env);
+    return handle(request, env["redirects-kv"], env);
   },
 };
