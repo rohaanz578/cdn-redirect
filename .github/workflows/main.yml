@@ -1,48 +1,54 @@
 name: Build, Test and Deploy
+
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:      # Allow manual triggering
   push:
     branches:
-      - main
+      - main             # Trigger on push to main branch
   pull_request:
     branches:
-      - main
+      - main             # Trigger on PRs targeting main
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     name: Build and Test
     steps:
       - uses: actions/checkout@v5
-      - name: Setup NodeJS
+
+      - name: Setup Node.js environment
         uses: actions/setup-node@v4.4.0
+
       - name: Install dependencies
-        run: |
-          npm install
-      - name: Test
-        run: |
-          npm run test #-with-coverage
+        run: npm install
+
+      - name: Run tests
+        run: npm run test # you can add --coverage if needed
         env:
           CF_KV_NAMESPACE: ${{ secrets.CF_KV_NAMESPACE }}
           CF_KV_PREVIEW_NAMESPACE: ${{ secrets.CF_KV_PREVIEW_NAMESPACE }}
+
+      # Uncomment below if you want to upload coverage reports to Codecov
       # - name: Upload coverage to Codecov
       #   uses: codecov/codecov-action@v3
       #   with:
       #     token: ${{ secrets.CODECOV_TOKEN }}
+
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy
-    needs:
-      - build-and-test
-    if: ${{ success() && github.ref == 'refs/heads/main' }}
+    name: Deploy to Cloudflare Workers
+    needs: build-and-test
+    if: ${{ success() && github.ref == 'refs/heads/main' }}  # Deploy only on successful build on main branch
     steps:
       - uses: actions/checkout@v5
-      - name: Deploy to Cloudflare Workers
+
+      - name: Deploy using Wrangler
         uses: cloudflare/wrangler-action@v3.14.1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           preCommands: |
             npm install
-            npm run config
+            npm run config    # Make sure this command exists in your package.json scripts
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE: ${{ secrets.CF_KV_NAMESPACE }}
