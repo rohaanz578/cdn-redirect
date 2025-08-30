@@ -4,47 +4,49 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+  workflow_dispatch:  # allow manual trigger
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CF_KV_NAMESPACE: ${{ secrets.CF_KV_NAMESPACE }}
-      CF_KV_PREVIEW_NAMESPACE: ${{ secrets.CF_KV_PREVIEW_NAMESPACE }}
-      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-      CREATE_API_KEY: ${{ secrets.CREATE_API_KEY }}  # add this if you use it
 
     steps:
+      # 1. Checkout your repository
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: List files in repo root
+      # 2. Debug: Confirm template exists
+      - name: List files
         run: ls -la
 
-      - name: Setup Node.js environment
+      # 3. Setup Node.js 20 (required by Wrangler v4+)
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
+      # 4. Install dependencies
       - name: Install dependencies
         run: npm install
 
-      - name: Check environment variables (debug)
-        run: |
-          echo "CF_KV_NAMESPACE=$CF_KV_NAMESPACE"
-          echo "CF_KV_PREVIEW_NAMESPACE=$CF_KV_PREVIEW_NAMESPACE"
-          echo "CREATE_API_KEY=$CREATE_API_KEY"
-
-      - name: Generate wrangler.toml config file
+      # 5. Generate wrangler.toml from template using Liquid
+      - name: Generate wrangler.toml
         run: npm run config
+        env:
+          CF_KV_NAMESPACE: ${{ secrets.CF_KV_NAMESPACE }}
+          CF_KV_PREVIEW_NAMESPACE: ${{ secrets.CF_KV_PREVIEW_NAMESPACE }}
+          CREATE_API_KEY: ${{ secrets.CREATE_API_KEY }}
 
-      - name: Check generated wrangler.toml
+      # 6. Debug: Verify the generated wrangler.toml file
+      - name: Show generated wrangler.toml
         run: cat wrangler.toml
 
-      - name: Install Wrangler
+      # 7. Install Wrangler CLI globally
+      - name: Install Wrangler CLI
         run: npm install -g wrangler
 
+      # 8. Deploy using Wrangler
       - name: Deploy to Cloudflare Workers
         run: wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
