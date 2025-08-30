@@ -1,51 +1,35 @@
-name: Build and Deploy to Cloudflare Workers
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:  # manual trigger
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_KV_NAMESPACE: ${{ secrets.CF_KV_NAMESPACE }}
+      CF_KV_PREVIEW_NAMESPACE: ${{ secrets.CF_KV_PREVIEW_NAMESPACE }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
     steps:
-      # 1. Checkout the repository to get all files, including wrangler.toml.template
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      # 2. Debug step to confirm the template file is present (optional but recommended)
       - name: List files in repo root
         run: ls -la
 
-      # 3. Setup Node.js (adjust version if needed)
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # 4. Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # 5. Run your config script to generate wrangler.toml from wrangler.toml.template
       - name: Generate wrangler.toml config file
         run: npm run config
 
-      # 6. Confirm the generated wrangler.toml exists (optional debug)
       - name: Check generated wrangler.toml
         run: ls -la wrangler.toml
 
-      # 7. Install Wrangler CLI globally (or locally if preferred)
       - name: Install Wrangler
         run: npm install -g wrangler
 
-      # 8. Deploy using wrangler
       - name: Deploy to Cloudflare Workers
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_KV_NAMESPACE: ${{ secrets.CF_KV_NAMESPACE }}
-          CF_KV_PREVIEW_NAMESPACE: ${{ secrets.CF_KV_PREVIEW_NAMESPACE }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: wrangler deploy
